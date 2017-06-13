@@ -1,20 +1,20 @@
 # kvalidator
 simple Javascript object validation
 
-
+```
 Example:
-
   const rules = {
-    name: 'string|max:30|min:3|required',
-    age: 'int|min:18|max:99|required'
+    name: 'string|min:3|max:60|required',
+    age: 'int|min:18|required'
   }
 
   const data = {
-    name: 'asa',
-    age: 18
+    name: 'reke',
+    age: 24
   }
 
   const validator = Validator(rules)
 
   // return: array of error message
   validator.test(data)
+```
