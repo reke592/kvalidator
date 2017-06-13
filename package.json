@@ -1,5 +1,5 @@
 {
-  "name": "validator",
+  "name": "kvalidator",
   "version": "1.0.0",
   "description": "data validation",
   "main": "index.js",
@@ -7,5 +7,9 @@
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "erric.rapsing@gmail.com",
-  "license": "MIT"
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/reke592/kvalidator.git"
+  }
 }
