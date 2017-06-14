@@ -1,0 +1,9 @@
+# ------------------
+# - Version 1.0.0
+#
+#     lib/Validator.js    (main)
+#     lib/rule-parse.js
+#     lib/test.js         (pre-defined rules)
+#
+# pre-defined rules can be overriden by using the Validator.defineTest(slug, fn) method
+#

@@ -2,12 +2,6 @@ const Validator = require("./lib/Validator")
 module.exports = Validator
 
 /*
-  TODO:
-    major update
-    fix error message
-*/
-
-/*
   Example:
 
   const rules = {
@@ -16,12 +10,12 @@ module.exports = Validator
   }
 
   const data = {
-    name: 'asa',
+    name: 'reke',
     age: 18
   }
 
   const validator = Validator(rules)
 
   // return: array of error message
-  validator.test(data)
+  validator.validate(data)
 */
