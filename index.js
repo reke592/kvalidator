@@ -2,6 +2,12 @@ const Validator = require("./lib/Validator")
 module.exports = Validator
 
 /*
+  TODO:
+    major update
+    fix error message
+*/
+
+/*
   Example:
 
   const rules = {
