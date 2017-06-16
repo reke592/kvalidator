@@ -1,5 +1,12 @@
 # ------------------
-# - Version 1.0.0
+# - Version 1.1.1
+#     + [MODIFY] error messages from array to object for better access
+#     + validator.fail() returns the error count
+#     + validator.invalid(param_name) check if the parameter name is invalid based on rules
+#     + validator.messages() returns the error messages
+#
+# ------------------
+# - Version 1.1.0
 #
 #     lib/Validator.js    (main)
 #     lib/rule-parse.js

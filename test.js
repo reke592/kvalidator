@@ -20,6 +20,13 @@ const val = Validator({
   useless_rule: 'number|min:5|max:100'
 })
 
+val.validate(data)
 
-let result = val.validate(data)
-console.log(result)
+let err_message = val.messages()
+let invalid = val.invalid
+
+console.log(err_message)
+console.log(`\nvalidator fail?\n${val.fail()}`)
+console.log(`\nerror occured in name?\n${invalid('name')}`)
+console.log(`\nerror occured in age?\n${invalid('age')}`)
+console.log(`\nerror occured in message?\n${invalid('message')}`)
