@@ -1,5 +1,5 @@
-const Validator = require("./lib/Validator")
-module.exports = Validator
+const KValidator = require("./lib/KValidator")
+module.exports = KValidator
 
 /*
   Example:
