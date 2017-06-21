@@ -3,24 +3,22 @@ const test = require('../lib/test')
 const Result = require('../lib/Result')
 
 let result = Result()
-let fn = FunctionBuilder()
+let fn = FunctionBuilder('_data', '_result')
 
 let data = {
-  value: 'reke',
+  value: 1,
   parameter: 'name'
 }
 
-fn.first(fn.include(Result))
-fn.first(fn.force('let result = Result()'))
-fn.first(fn.param('let data', data))
-fn.first(fn.force('data.message = result.message'))
-fn.first(fn.force('console.log(data)'))
-fn.auto(test['string'], 'data')
-fn.build()
-// fn.run()
+// fn.params('_data','_result')
+let x = fn.head('var data = _data')
+          .head('data.message = _result.message')
+          .body(test['string'], 'data', null, true)
+          .footer('_result.log()')
+          .build()
 
-// console.log(fn)
-console.log(fn.toString())
+x(data, result)
+console.log(result.errors())
 
 /* TODO:
     fix FunctionBuilder
