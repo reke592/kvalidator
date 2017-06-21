@@ -10,26 +10,36 @@ let data = {
 let rules = {
   name: 'string|min:2|max:5|required',
   age: 'number|min:18|max:30|required',
-  message: 'string|min:10|max:20',
+  message: 'string|min:10|max:20|testing',
   address: 'string|min:30|max:255'
 }
 
 let bulk = []
-let items = 1000000
+let items = 1
 for(var i = 0; i <= items; i++)
   bulk.push(data)
 
 let validator = KValidator(rules)
+validator.mix({
+  somefn: function(data) {
+    console.log('mixin call : ' + data)
+  }
+})
+
+validator.defineTest('testing', function({value, message, somefn}) {
+  somefn(value)
+  return message(true, 'asd')
+})
 
 console.time('test')
-for(var j = 0; j < 1; j++)
+for(var j = 0; j < 10; j++)
   validator.validateArray(bulk)
 console.timeEnd('test')
 
 console.log('tested data: ' + items)
 console.log('errors: ' + validator.fail())
 console.log('sample:')
-console.log(validator.summary()[0])
+// console.log(validator.errors())
 
 /* TODO:
   optimize lib/Result.js

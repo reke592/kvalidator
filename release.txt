@@ -1,4 +1,24 @@
 # ------------------
+# - Version 1.1.3
+#			+ [OPTIMIZATION] validator.validateArray() :: from O(n^2) -> O(n)
+#			+ validator.mix() :: include an option to test function
+#					eg.
+#						validator.mix({
+#							somefn : [Function]
+#						})
+#
+#						validator.defineTest({value, message, somefn}) {
+#							somefn(value);
+#							return message(bool, message);
+#						}
+#			+ validator.setRules(rules) :: change the validator rules
+#
+# ------------------
+# - Version 1.1.2
+#			+ validator.summary() :: returns summary of validation (eg. { age:false } when any condition in rules is violated.)
+#			+ validator.validateArray() :: for bulk data validation
+#
+# ------------------
 # - Version 1.1.1
 #     + [MODIFY] error messages from array to object for better access
 #     + validator.fail() returns the error count
