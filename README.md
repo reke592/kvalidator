@@ -23,7 +23,7 @@ Example:
 ```
   const validator = Validator(rules)
 
-  validator.defineTest('string', function({data, message, tested}) {
+  validator.defineTest('string', function({value, message, tested}) {
     // validate data
     if(tested[some_rule])
       // validation against other rule
@@ -46,3 +46,38 @@ Example:
   *     message   - helper function in validator to include error message if boolean_result is false
   */
 ```
+
+#Adding mixin function to assertions
+```
+  const rules = {
+    name : 'string|required|sample_mixin'
+  }
+  const validator = Validator(rules)
+
+  validator.mix({
+    'someFunction': function(param) {
+      // do something in param
+      console.log(param)
+    }
+  })
+
+  validator.defineTest('sample_mixin', function({value, message, someFunction}) {
+    // call the mix function
+    someFunction(value);
+    return message(boolean_result, message)
+  });
+
+  let data = {
+    name: 'reke'
+  }
+
+  validator.validate(data);
+```
+
+#Bulk Validation
+Unlike the previous version O(n^2), kvalidator can now test the bulk data much faster.
+```
+  // Complexity O(n)
+  validator.validateArray(data)
+```
+Note: As of now I'm currently working for result pipes to avoid Heap error.
