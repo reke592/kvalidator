@@ -8,37 +8,40 @@ let rules = {
 }
 
 let bulk = []
-let items = 10000000
-for(var i = 0; i <= items; i++)
+let err = []
+let items = 1000001
+
+for(var i = 0; i < items; i++)
   bulk.push({
-    age: null,
-    name: 1,
+    index: i,
+    age: 18,
+    name: "reke",
     message: "Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.",
     address: 'Norzagaray, Bulacan. Philippines'
   })
 
 let validator = KValidator(rules)
-let middle = items / 2
-validator.pipe(({index, data}) => {
-  if(index == middle) {
-    data.checked = true
-    console.log('reached 50% in')
-    console.timeEnd('pipe')
+let middle = items-1
+middle = Number.parseInt(middle/2)
+validator.pipe(({index, data, valid, message, fail, stop}) => {
+  if(fail) {
+    err.push({index, message})
   }
 })
 
-console.time('pipe')
 console.time('test')
-for(var j = 0; j < 1; j++)
-  validator.validateArray(bulk)
-
+validator.validateArray(bulk)
 console.log('done validation')
 console.timeEnd('test')
-console.log('tested data: ' + items)
+
+console.log('tested data: ' + (bulk.length - 1))
 console.log('errors: ' + validator.fail())
 console.log('sample:')
-
+console.log(err[216321])
+// console.log(bulk)
 bulk = []
+err = []
+
 // console.log(bulk[middle-1])
 // console.log(bulk[middle])
 // console.log(bulk[middle+1])
