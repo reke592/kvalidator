@@ -1,4 +1,4 @@
-const KValidator = require('../lib/KValidator')
+const KValidator = require('../lib/KValidator').Validator
 
 let data = {
   age: null,

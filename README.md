@@ -19,7 +19,51 @@ Example:
   validator.validate(data)
 ```
 
-#defining new / overriding existing assertions
+#Creating a validator using the Builder
+```
+  const KValidator = require("kvalidator")
+
+  const rules = {
+    name: 'string|min:15|max:30',
+    age: 'min:18|max:99'
+  }
+
+  var builder = KValidator.Builder
+
+  // on-data : before each validation hook
+  builder.on('data', function(data) {
+    console.log(data);
+    // some data mutations before validation
+  })
+
+  // on-result : after each validation hook
+  builder.on('result', function({message}) {
+    console.log(message)
+    // logic when data is valid/invalid (eg. push to an array stack if invalid, etc.)
+  })
+
+  // on-finish : after all validation test hook (for improvement : MUST emit something when running on a child-process)
+  builder.on('finish', () => console.log('done'))
+
+  // create the validation function
+  var validator = builder.create(rules)
+
+  // test data
+  var items = [
+    {
+      name: 'Ann Lyn',
+      age: 24
+    },
+    {
+      name: 'Max Col',
+      age: 25
+    }
+  ]
+
+  validator.validateArray(items)
+```
+
+#Defining new / overriding existing assertions
 ```
   const validator = Validator(rules)
 
@@ -47,13 +91,15 @@ Example:
   */
 ```
 
-#Adding mixin function to assertions
+#Adding mixin function to assertions direct in KValidator.Validator
 ```
+  const Validator = require('kvalidator').Validator
   const rules = {
     name : 'string|required|sample_mixin'
   }
   const validator = Validator(rules)
 
+  // create mixin function
   validator.mix({
     'someFunction': function(param) {
       // do something in param
@@ -61,6 +107,7 @@ Example:
     }
   })
 
+  // create a test function and include the mixin in parameter
   validator.defineTest('sample_mixin', function({value, message, someFunction}) {
     // call the mix function
     someFunction(value);
@@ -74,10 +121,31 @@ Example:
   validator.validate(data);
 ```
 
+Note: You can also define a mixin function via Builder
+```
+  const builder = require('kvalidator').Builder
+  const rules = { ... }
+
+  // declare hooks
+  builder.on('data', fn)
+  builder.on('result', fn)
+  builder.on('finish', fn)
+
+  // include mixins
+  builder.mix('slug', fn)
+  builder.mixins({
+    'slug': fn
+  })
+
+  // create the validator
+  const validator = builder.create(rules)
+
+  // define a new test and use the mixin_slug
+  validator.defineTest('slug', ({ mixin_slug }) => mixin())
+```
+
 #Bulk Validation
 Unlike the previous version O(n^2), kvalidator can now test the bulk data much faster.
 ```
-  // Complexity O(n)
   validator.validateArray(data)
 ```
-Note: As of now I'm currently working for result pipes to avoid Heap error.
