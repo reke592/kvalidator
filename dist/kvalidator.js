@@ -52,7 +52,9 @@
 	exports.Validator = Validator;
 	exports.Builder = Builder;
 
+	// for client browsers
 	var KValidator = window.KValidator = exports;
+
 	/*
 	  Example:
 	  
@@ -94,6 +96,11 @@
 
 	'use strict';
 
+	/*
+	* KValidator
+	* author: erric rapsing
+	*/
+
 	var parser = __webpack_require__(2);
 	var test = __webpack_require__(3);
 	var Result = __webpack_require__(4);
@@ -109,9 +116,9 @@
 	  '_options', '_data', '_test', '_result', '_resetOptions', '_hooks');
 
 	  // validator hooks eg: validator.on('result', cb)
-	  var _hooks = hooks;
+	  var _hooks = hooks || {};
 	  // validation rules
-	  var _rules = rules;
+	  var _rules = rules || {};
 	  // validation function handler
 	  var _validate = undefined;
 	  // kill-switch
@@ -410,6 +417,11 @@
 
 	"use strict";
 
+	/*
+	* KValidator Result
+	* author: erric rapsing
+	*/
+
 	function Result(stop) {
 	  var _kill_switch = stop;
 
@@ -553,6 +565,11 @@
 
 	'use strict';
 
+	/*
+	* FunctionBuilder
+	* author: erric rapsing
+	*/
+
 	function FunctionBuilder() {
 	  var _before = [];
 	  var _events = [];
@@ -644,6 +661,11 @@
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
+
+	/*
+	* KValidator Builder
+	* author: erric rapsing
+	*/
 
 	var Validator = __webpack_require__(1);
 
