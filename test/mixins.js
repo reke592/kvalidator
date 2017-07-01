@@ -1,46 +1,27 @@
-const KValidator = require('../lib/KValidator').Validator
-
-let data = {
-  age: null,
-  name: 1,
-  message: 'Tinky-winky, Dipsy, Laa-Laa, Po, Po. Tinky-winky, Dipsy, Laa-Laa, Po, Po.',
-  address: 'Norzagaray, Bulacan. Philippines'
+const Validator = require('../lib/KValidator')
+const rules = {
+  name : 'string|required|sample-mixin'
 }
+const validator = Validator.create(rules)
 
-let rules = {
-  name: 'string|min:2|max:5|required',
-  age: 'number|min:18|max:30|required',
-  message: 'string|min:10|max:20|testing',
-  address: 'string|min:30|max:255'
-}
-
-let bulk = []
-let items = 1
-for(var i = 0; i <= items; i++)
-  bulk.push(data)
-
-let validator = KValidator(rules)
+// create mixin function
 validator.mix({
-  somefn: function(data) {
-    console.log('mixin call : ' + data)
+  'someFunction': function(param) {
+    // do something in param
+    console.log(param)
   }
 })
 
-validator.defineTest('testing', function({value, message, somefn}) {
-  somefn(value)
-  return message(true, 'asd')
-})
+// create a test function and include the mixin in parameter
+validator.defineTest('sample-mixin', function({value, message, someFunction}) {
+  // call the mix function
+  someFunction(value);
+  // return message(boolean_result, message)
+  return message(false, 'testing')
+});
 
-console.time('test')
-for(var j = 0; j < 10; j++)
-  validator.validateArray(bulk)
-console.timeEnd('test')
+let data = {
+  name: 'reke'
+}
 
-console.log('tested data: ' + items)
-console.log('errors: ' + validator.fail())
-console.log('sample:')
-// console.log(validator.errors())
-
-/* TODO:
-  optimize lib/Result.js
-*/
+validator.validate(data);

@@ -64,7 +64,7 @@ Example:
   */
 ```
 
-# Adding mixin function to assertions direct in KValidator.Validator
+# Adding mixin function to assertions
 ```
   const Validator = require('kvalidator')
   const rules = {

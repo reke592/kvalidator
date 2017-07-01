@@ -261,7 +261,7 @@
 
 	function parse(param, cb) {
 	  if (!param) return true;
-	  var rules = param.match(/[a-zA-Z0-9]+\:{0,1}([\"a-zA-Z0-9]+)/g);
+	  var rules = param.match(/[a-zA-Z0-9_-]+\:{0,1}([\"a-zA-Z0-9]+)/g);
 
 	  rules.forEach(function (rule) {
 	    var _rule$split = rule.split(':'),

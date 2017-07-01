@@ -1,4 +1,8 @@
 # ------------------
+# - Version 1.1.7
+#     + [FIX] rule-parse :: to suport format hyphen and underscore
+#
+# ------------------
 # - Version 1.1.6 :: KISS
 #     - [REMOVED] KValidatorBuilder
 #     - [REMOVED] Validator hooks
