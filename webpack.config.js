@@ -4,7 +4,7 @@ const path = require('path')
 const BUILD_PATH = path.resolve(__dirname, 'dist')
 
 var config = {
-  entry: './front-end.js',
+  entry: './index.js',
   output: {
     path: BUILD_PATH,
     filename: '/kvalidator.js'

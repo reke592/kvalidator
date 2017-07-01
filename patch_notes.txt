@@ -1,4 +1,11 @@
 # ------------------
+# - Version 1.1.4 :: KISS
+#     - [REMOVED] KValidatorBuilder
+#     - [REMOVED] Validator hooks
+#     + [MODIFY] validator.validateArray() :: from methods parameter (arr) -> (arr, onResultCb, cb)
+#     + [OPTIMIZATION] _validation function
+#     
+# ------------------
 # - Version 1.1.3
 #			+ [OPTIMIZATION] validator.validateArray() :: from O(n^2) -> O(n)
 #			+ validator.mix() :: include an option to test function

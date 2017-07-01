@@ -47,47 +47,39 @@
 	"use strict";
 
 	var Validator = __webpack_require__(1);
-	var Builder = __webpack_require__(6);
 
-	exports.Validator = Validator;
-	exports.Builder = Builder;
+	module.exports = exports = Validator;
 
 	// for client browsers
-	var KValidator = window.KValidator = exports;
+	var KValidator = window.KValidator = Validator;
 
 	/*
 	  Example:
 	  
-	  const KValidator = require("kvalidator")
-	  const rules = {
-	    name: 'string|max:30|min:3|required',
-	    age: 'int|min:18|max:99|required'
+	  const Validator = require('../lib/Kvalidator')
+
+	  let data = {
+	    age: 18,
+	    name: "reke",
+	    message: "Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.",
+	    address: 'Philippines'
 	  }
 
-	  const data = {
-	    name: 'reke',
-	    age: 18
+	  let rules = {
+	    name: 'string|min:2|max:5|required',
+	    age: 'number|min:10|max:25|required',
+	    message: 'string|min:10|max:20',
+	    address: 'string|min:30|max:255'
 	  }
 
-	  let builder = KValidator.Builder
-	  builder.on('data', function(data) {
-	    // run statement, before each validation
-	    // eg. data-mutation before validation
-	  })
+	  console.log('creating validator..')
+	  validator = Validator.create(rules)
 
-	  builder.on('result', function({
-	        data,
-	        fail,         // true if violated any rule
-	        message,      // violation message
-	        index,        // array index
-	        stop,         // kill-switch to force-stop the validation process
-	        valid         // current validation result (eg. valid.name, valid.age)
-	      }))
-
-	  const validator = builder.create(rules)
-
-	  // return: array of error message
 	  validator.validate(data)
+	  console.log(validator.fail())
+	  console.log(validator.errors())
+	  console.log(validator.invalid('message'))
+	  console.log(validator.summary())
 	*/
 
 /***/ },
@@ -106,23 +98,25 @@
 	var Result = __webpack_require__(4);
 	var FunctionBuilder = __webpack_require__(5);
 
-	function KValidator(rules, mixins, hooks) {
-	  var _result = Result(kill_switch);
-	  var _test = test; // pre-loaded test functions
+	function KValidator(rules, mixins) {
+
+	  // validator result manager
+	  var _result = Result();
+
+	  // pre-load assertions, the user can modify by using the defineTest() method
+	  var _test = test;
 
 	  // validation function builder
 	  var _fn = FunctionBuilder(
 	  // params to pipe KValidator variables to validation function
-	  '_options', '_data', '_test', '_result', '_resetOptions', '_hooks');
+	  '_options', '_data', '_assert');
 
-	  // validator hooks eg: validator.on('result', cb)
-	  var _hooks = hooks || {};
 	  // validation rules
 	  var _rules = rules || {};
 	  // validation function handler
 	  var _validate = undefined;
-	  // kill-switch
-	  var _run = true;
+	  // // kill-switch
+	  // let _run = true
 	  // data to be tested
 	  var _data = {};
 	  // container for available parameters for each test declaration
@@ -142,44 +136,14 @@
 	    return _result.message(result, message, _options.parameter);
 	  };
 
-	  _init(_rules, _mixins, _hooks);
+	  _init(_rules, _mixins);
 
 	  // -----------------------------------------------------------------
 
-	  function _init(rules, mixins, hooks) {
+	  function _init(rules, mixins) {
 	    setRules(rules);
 	    mix(mixins);
-	    /* on-result hook
-	     * for each data in array, call hook after validation.
-	     * @see Result.pipe for options
-	     */
-	    if (hooks.result) _result.pipe(hooks.result);
-	    // _rebuildBuffer(4)
 	  }
-
-	  // function _rebuildBuffer(buffers) {
-	  //   let count = buffers
-	  //   let token = `var len = data.length / ${buffers};\n`
-	  //       token += 'var i = len;\n'
-	  //   let chunks = ''
-	  //   let iters = ''
-	  //   let append = ''
-	  //   while(count--) {
-	  //     chunks += `var chunk_${count} = data.splice(0, len);\n`
-	  //     iters += `validate(chunk_${count}[i]);\n`
-	  //   }
-	  //   token += chunks
-	  //   token += `while(i--) {\n`
-	  //   // token += `console.log(chunk_1)\n`
-	  //   token += iters
-	  //   token += '}'
-
-	  //   _parl = FunctionBuilder('data', 'validate')
-	  //           .body(token)
-	  //           .build()
-	  //   // console.log(_parl.toString())
-	  // }
-
 
 	  // additional options for a test function
 	  function mix(mixins) {
@@ -195,85 +159,72 @@
 
 	  // change rules
 	  function setRules(rules) {
-	    /* on-data hook
-	     * for each data in array, call hook before validation
-	     */
-	    if (_hooks['data']) _fn.body('_hooks[\'data\'](_data);');
 	    // replace rules
 	    _rules = rules;
+	    var required = void 0;
+
 	    for (var key in rules) {
+	      required = rules[key].match(/required/);
+
 	      // update value parameter being tested
 	      _fn.body('_options.value = _data["' + key + '"];');
+
 	      // update parameter name being tested
 	      _fn.body('_options.parameter = "' + key + '";\n');
+
+	      // optimize non-required data
+	      if (!required) _fn.body('if(_options.value) {');
+
 	      // parse rules
 	      parser(rules[key], function (slug, condition) {
-	        _fn.body(_addEvent(slug, condition, key, rules[key]));
+	        _fn.body('_assert("' + key + '", "' + slug + '", ' + condition + ');');
 	      });
+
+	      if (!required) _fn.body('}');
+
 	      // clean _options.tested after validating each key
-	      _fn.body('_options.tested = {};');
+	      _fn.body('_options.tested = {};\n');
 	    }
 	    _compile();
 	  }
 
-	  // private: _addEvent
-	  // create the script for validation function
-	  function _addEvent(slug, condition, parameter, rules) {
-	    // let token = `if(this._rules["${parameter}"].match(/${slug}/)) {\n`
-	    var required = rules.match(/required/);
-	    var token = '';
-
-	    // optimize validation for non-required parameters
-	    if (!required) token += 'if(_options.value) {\n';
-	    // update condition
-	    token += '_options.condition = ' + condition + ';\n';
-	    // include test function result in tested
-	    token += '_options.tested["' + slug + '"] = _test["' + slug + '"](_options);\n';
-	    // create a result summary for tested parameter
-	    token += '_result.add("' + parameter + '","' + slug + '", _options.tested["' + slug + '"]);\n';
-	    // clean _options [value, parameter, condition]
-	    token += '_resetOptions();\n';
-	    if (!required) token += '}';
-
-	    return token;
+	  function _assert(param, rule, condition) {
+	    // condition for test function
+	    _options.condition = condition;
+	    // update tested rules for current key
+	    _options.tested[rule] = _test[rule](_options);
+	    // log validation result
+	    _result.add(param, rule, _options.tested[rule]);
 	  }
 
 	  // create the validation function
 	  function _compile() {
-	    // push the result in _result stack, will also run the on-result hook if declared
-	    _fn.footer('_result.log(_data);');
 	    _validate = _fn.build();
-	  }
-
-	  // after each test reset needed options
-	  function _resetOptions() {
-	    _options.condition = undefined;
 	  }
 
 	  // validate single object
 	  function validate(data) {
 	    // change data to be tested
 	    _data = data;
+	    // console.log(_validate.toString())
 	    // run compiled validation function
-	    if (_validate) _validate(_options, _data, _test, _result, _resetOptions, _hooks);
+	    if (_validate) _validate(_options, _data, _assert);
 	  }
 
-	  // validate multiple objects, decrement iteration
-	  function validateArray(arr) {
-	    var i = arr.length;
-	    while (--i && _run) {
-	      validate(arr[i]);
-	    }
-	    if (_run) validate(arr[0]);
-	    /* on-finish hook
-	     * run-once after bulk data validation
-	     */
-	    if (_hooks.finish) _hooks.finish();
-	  }
-
-	  function kill_switch(index) {
-	    console.log('Validation kill-switch has been triggered. [index: ' + index + ']');
-	    _run = false;
+	  function validateArray(arr, onResult, cb) {
+	    var i = 0;
+	    var n = arr.length;
+	    var timer = setInterval(function () {
+	      while (i < n) {
+	        validator.validate(arr[i++]);
+	        onResult({ validator: validator, data: _data });
+	        validator.next();
+	      }
+	      if (i == n) {
+	        clearInterval(timer);
+	        if (cb) cb();
+	      }
+	    }, 1);
 	  }
 
 	  return {
@@ -282,25 +233,23 @@
 	    setRules: setRules,
 	    mix: mix,
 	    defineTest: defineTest,
-	    test: _test,
 	    errors: _result.errors,
 	    fail: _result.count,
 	    invalid: _result.invalid,
 	    summary: _result.summary,
-	    stop: kill_switch
+	    next: _result.clear
 	  };
 	}
 
-	var init = function init(rules, mixins, hooks) {
+	var create = function create(rules, mixins) {
 	  if (!rules) return null;
 	  var _mixins = mixins || {};
-	  var _hooks = hooks || {};
-	  return new KValidator(rules, _mixins, _hooks);
+	  return new KValidator(rules, _mixins);
 	};
 
 	// expose methods
+	exports.create = create;
 	exports.Validator = KValidator;
-	exports.init = init;
 
 /***/ },
 /* 2 */
@@ -422,39 +371,34 @@
 	* author: erric rapsing
 	*/
 
-	function Result(stop) {
-	  var _kill_switch = stop;
-
+	function Result() {
 	  var _pipe = undefined; // use heap by default
 
-	  var _current_parameter = null;
-	  var _current_result = {};
-	  var _current_errors = {};
-	  var _current_summary = true;
-	  var _current_index = 0;
-
-	  // when using Heap in validation
+	  // let _current_parameter = null
+	  var _result = {};
+	  var _errors = {};
+	  var _summary = true;
 	  var _count = 0;
-	  var _summary_results = [];
-	  var _summary_messages = [];
 
 	  function message(result, message, parameter) {
 	    parameter = parameter || _count;
-	    if (!_current_errors[parameter]) _current_errors[parameter] = [];
+	    if (!_errors[parameter]) _errors[parameter] = [];
 	    if (result == false) {
-	      _current_errors[parameter].push(message);
+	      _errors[parameter].push(message);
 	      _count++;
 	    }
 
-	    _current_summary = _current_summary && result;
+	    _summary = _summary && result;
 	    // return back the result to test function being called
 	    return result;
 	  }
 
-	  function errors() {
+	  function errors(key) {
+	    if (key) return _errors[key];
+	    // else
 	    var clone = {};
-	    for (var key in _current_errors) {
-	      clone[key] = _current_errors[key];
+	    for (var key in _errors) {
+	      clone[key] = _errors[key];
 	    }
 	    return clone;
 	  }
@@ -462,76 +406,35 @@
 	  // summary
 	  function add(parameter, slug, result) {
 	    // check if not yet tested
-	    if (_current_result[parameter] === undefined) {
+	    if (_result[parameter] === undefined) {
 	      // assume true
-	      _current_result[parameter] = true;
+	      _result[parameter] = true;
 	    }
-	    _current_result[parameter] = _current_result[parameter] && result;
+	    // sum of validation results for each key
+	    _result[parameter] = _result[parameter] && result;
 	  }
 
-	  // after each validation
-	  function log(data) {
-	    // use pipe
-	    if (_pipe) {
-	      _pipe({
-	        data: data,
-	        fail: !_current_summary,
-	        message: !_current_summary ? _current_errors : null,
-	        index: _current_index,
-	        stop: _stop,
-	        valid: _current_result
-	      });
-	    }
-	    // use heap
-	    else {
-	        _summary_results.push(_current_result);
-	        _summary_messages.push(_current_errors);
-	      }
+	  // clear results for next validation
+	  function clear() {
 	    // reset current state for next data
-	    next();
-	  }
-
-	  // forced stop
-	  function _stop() {
-	    // since log() is being called after each validation, we need to exclude the last result
-	    _summary_results.pop();
-	    _summary_messages.pop();
-	    _count--;
-	    _kill_switch(_current_index);
-	  }
-
-	  // next index
-	  function next() {
-	    // reset current state for next data
-	    _current_result = {};
-	    _current_errors = {};
-	    _current_summary = true;
-	    _current_index++;
-	  }
-
-	  // after each validation call _pipe
-	  function pipe(fn) {
-	    _pipe = fn;
+	    _result = {};
+	    _errors = {};
+	    _summary = true;
 	  }
 
 	  // returns array of validation message
-	  function errors() {
-	    if (_summary_messages.length > 1) return [].concat(_summary_messages);
-
-	    return _summary_messages[0];
-	  }
+	  // function errors() {
+	  //   return _errors
+	  // }
 
 	  // returns array of validation summary
 	  function summary() {
-	    if (_summary_results.length > 1) return [].concat(_summary_results);
-
-	    return _summary_results[0];
+	    return _result;
 	  }
 
-	  // check if parameter is invalid
-	  function invalid(parameter, index) {
-	    var i = index || 0;
-	    return _summary_results[i] ? !_summary_results[i][parameter] : undefined;
+	  // check if key/parameter is invalid based on rules
+	  function invalid(parameter) {
+	    return !_result[parameter];
 	  }
 
 	  // count of errors
@@ -539,20 +442,13 @@
 	    return _count;
 	  }
 
-	  function getIndex() {
-	    return _current_index;
-	  }
-
 	  return {
 	    add: add,
 	    count: count,
 	    errors: errors,
-	    getIndex: getIndex,
 	    invalid: invalid,
-	    log: log,
 	    message: message,
-	    next: next,
-	    pipe: pipe,
+	    clear: clear,
 	    summary: summary
 	  };
 	}
@@ -624,6 +520,7 @@
 	  }
 
 	  function build() {
+	    // console.log(toString())
 	    _fn_cache = new Function(_params.join(), toString());
 	    _reset();
 	    return _fn_cache;
@@ -655,63 +552,6 @@
 	}
 
 	module.exports = FunctionBuilder;
-
-/***/ },
-/* 6 */
-/***/ function(module, exports, __webpack_require__) {
-
-	'use strict';
-
-	/*
-	* KValidator Builder
-	* author: erric rapsing
-	*/
-
-	var Validator = __webpack_require__(1);
-
-	function KValidatorBuilder() {
-	  var _rules = undefined;
-	  var _validator = undefined;
-	  var _mixins = {};
-	  var _hooks = {
-	    'data': undefined,
-	    'result': undefined,
-	    'finish': undefined
-	  };
-
-	  function on(slug, fn) {
-	    if (_hooks.hasOwnProperty(slug)) {
-	      console.log('kvalidator-hooks["' + slug + '"] : [Function:' + (fn.name || "Anonymous") + ']');
-	      _hooks[slug] = fn;
-	    }
-	    return this;
-	  }
-
-	  function mix(slug, fn) {
-	    if (typeof slug == 'string' && typeof fn == 'function') _mixins[slug] = fn;
-	    return this;
-	  }
-
-	  function mixins(obj) {
-	    for (var key in mixins) {
-	      mix(key, mixins[key]);
-	    }
-	  }
-
-	  function create(rules) {
-	    _rules = rules;
-	    return Validator.init(_rules, _mixins, _hooks);
-	  }
-
-	  return {
-	    on: on,
-	    mix: mix,
-	    mixins: mixins,
-	    create: create
-	  };
-	}
-
-	module.exports = exports = new KValidatorBuilder();
 
 /***/ }
 /******/ ]);

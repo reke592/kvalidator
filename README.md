@@ -3,6 +3,8 @@ simple Javascript object validation
 
 ```
 Example:
+  const Validator = require('kvalidator')
+
   const rules = {
     name: 'string|min:3|max:60|required',
     age: 'number|min:18|required'
@@ -13,59 +15,30 @@ Example:
     age: 24
   }
 
-  const validator = Validator(rules)
+  const validator = Validator.create(rules)
 
   // return: array of error message
   validator.validate(data)
 ```
 
-#Creating a validator using the Builder
+# Validator options
 ```
-  const KValidator = require("kvalidator")
-
-  const rules = {
-    name: 'string|min:15|max:30',
-    age: 'min:18|max:99'
-  }
-
-  var builder = KValidator.Builder
-
-  // on-data : before each validation hook
-  builder.on('data', function(data) {
-    console.log(data);
-    // some data mutations before validation
-  })
-
-  // on-result : after each validation hook
-  builder.on('result', function({message}) {
-    console.log(message)
-    // logic when data is valid/invalid (eg. push to an array stack if invalid, etc.)
-  })
-
-  // on-finish : after all validation test hook (for improvement : MUST emit something when running on a child-process)
-  builder.on('finish', () => console.log('done'))
-
-  // create the validation function
-  var validator = builder.create(rules)
-
-  // test data
-  var items = [
-    {
-      name: 'Ann Lyn',
-      age: 24
-    },
-    {
-      name: 'Max Col',
-      age: 25
-    }
-  ]
-
-  validator.validateArray(items)
+  validate                    - single object validation
+  validateArray               - multiple object validation
+  setRules                    - change validator rules
+  mix                         - add mixin function
+  defineTest                  - define new assertion
+  errors: _result.errors      - result errors
+  fail: _result.count         - error count
+  invalid: _result.invalid    - helper method to check if key value is invalid
+  summary: _result.summary    - summary of validation
+  next: _result.clear         - clear result, in case you want to use the validator in a loop / interval
 ```
 
-#Defining new / overriding existing assertions
+# Defining new / overriding existing assertions
 ```
-  const validator = Validator(rules)
+  const Validator = require('kvalidator')
+  const validator = Validator.create(rules)
 
   validator.defineTest('string', function({value, message, tested}) {
     // validate data
@@ -91,13 +64,13 @@ Example:
   */
 ```
 
-#Adding mixin function to assertions direct in KValidator.Validator
+# Adding mixin function to assertions direct in KValidator.Validator
 ```
-  const Validator = require('kvalidator').Validator
+  const Validator = require('kvalidator')
   const rules = {
     name : 'string|required|sample_mixin'
   }
-  const validator = Validator(rules)
+  const validator = Validator.create(rules)
 
   // create mixin function
   validator.mix({
@@ -121,31 +94,40 @@ Example:
   validator.validate(data);
 ```
 
-Note: You can also define a mixin function via Builder
+# Note:
+Validator.create() is only a helper
 ```
-  const builder = require('kvalidator').Builder
+  const kvalidator = require('kvalidator')
   const rules = { ... }
+  const mixins = {
+    'mixA': function(param) {
+      // do something ...
+    },
+    'mixB': function(param) {
+      // do something ...
+    }
+  }
 
-  // declare hooks
-  builder.on('data', fn)
-  builder.on('result', fn)
-  builder.on('finish', fn)
-
-  // include mixins
-  builder.mix('slug', fn)
-  builder.mixins({
-    'slug': fn
-  })
-
-  // create the validator
-  const validator = builder.create(rules)
-
-  // define a new test and use the mixin_slug
-  validator.defineTest('slug', ({ mixin_slug }) => mixin())
+  const validator = new kvalidator.Validator(rules, mixins)
 ```
 
-#Bulk Validation
+# Bulk Validation
 Unlike the previous version O(n^2), kvalidator can now test the bulk data much faster.
 ```
-  validator.validateArray(data)
+  function onResult({data, validator}) {
+    if(validator.fail()) {
+      console.log(validator.summary())
+    }
+    if(validator.invalid('age'))
+      results.push(data)
+  }
+
+  function done() {
+    console.log(results)
+    console.log(results.length)
+    console.timeEnd('test')
+  }
+
+  let data = []
+  validator.validateArray(data, onResult, done)
 ```

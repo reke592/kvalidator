@@ -1,43 +1,35 @@
 const Validator = require("./lib/KValidator")
-const Builder = require("./lib/KValidatorBuilder")
 
-exports.Validator = Validator
-exports.Builder = Builder
+module.exports = exports = Validator
 
 // for client browsers
-var KValidator = window.KValidator = exports
+// var KValidator = window.KValidator = Validator
 
 /*
   Example:
   
-  const KValidator = require("kvalidator")
-  const rules = {
-    name: 'string|max:30|min:3|required',
-    age: 'int|min:18|max:99|required'
+  const Validator = require('../lib/Kvalidator')
+
+  let data = {
+    age: 18,
+    name: "reke",
+    message: "Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.",
+    address: 'Philippines'
   }
 
-  const data = {
-    name: 'reke',
-    age: 18
+  let rules = {
+    name: 'string|min:2|max:5|required',
+    age: 'number|min:10|max:25|required',
+    message: 'string|min:10|max:20',
+    address: 'string|min:30|max:255'
   }
 
-  let builder = KValidator.Builder
-  builder.on('data', function(data) {
-    // run statement, before each validation
-    // eg. data-mutation before validation
-  })
+  console.log('creating validator..')
+  validator = Validator.create(rules)
 
-  builder.on('result', function({
-        data,
-        fail,         // true if violated any rule
-        message,      // violation message
-        index,        // array index
-        stop,         // kill-switch to force-stop the validation process
-        valid         // current validation result (eg. valid.name, valid.age)
-      }))
-
-  const validator = builder.create(rules)
-
-  // return: array of error message
   validator.validate(data)
+  console.log(validator.fail())
+  console.log(validator.errors())
+  console.log(validator.invalid('message'))
+  console.log(validator.summary())
 */
