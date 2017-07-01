@@ -11,8 +11,5 @@
   "repository": {
     "type": "git",
     "url": "https://github.com/reke592/kvalidator.git"
-  },
-  "dependencies": {
-    "deloop": "^1.0.2"
   }
 }
